@@ -9,7 +9,7 @@ library(lubridate, lib.loc = LIB.LOC)
 
 cookie <- login('samjpatten@gmail.com', 'finger73', rememberMe = FALSE)
 
-sleep <- get_sleep_data(cookie, start_date = '2015-09-01', end_date = '2016-07-09')$df %>% 
+sleep <- get_sleep_data(cookie, start_date = '2015-09-01', end_date = '2016-11-12')$df %>% 
           select(startDateTime, endDateTime, breaks)
 
 breaks <- sleep$breaks[[1]]
@@ -48,6 +48,20 @@ timeline <-   breaks %>%
               filter(!is.na(Time))
 
 
+# Allocate each record to a day
+timeline$Date <- as_date(timeline$Time)  
+
+
+timeline$Date <-  if (hour(timeline$Time) < 17)
+                  {
+                    timeline$Date - days(.1)
+                  } else
+                  {
+                    timeline$Date
+                  }
+
+
+
 start.date <- timeline %>% 
               select(Time) %>% 
               slice(1)
@@ -59,6 +73,8 @@ end.date <-   timeline %>%
               slice(n())
 end.date <-   trunc(end.date[,1]$Time, "day")
 end.date <-   update(end.date, hour = 17)
+
+
 
 
 
