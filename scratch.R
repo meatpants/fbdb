@@ -1,11 +1,10 @@
 
-LIB.LOC = 'C:/Users/spatten/R_Packs'
 
-library(fitbitScraper, lib.loc = LIB.LOC)
-library(ggplot2, lib.loc = LIB.LOC)
-library(tidyr, lib.loc = LIB.LOC)
-library(dplyr, lib.loc = LIB.LOC)
-library(lubridate, lib.loc = LIB.LOC)
+library(fitbitScraper)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(lubridate)
 
 cookie <- login('samjpatten@gmail.com', 'finger73', rememberMe = FALSE)
 
@@ -47,33 +46,27 @@ timeline <-   breaks %>%
               arrange(Time) %>%
               filter(!is.na(Time))
 
+timeline$State <- factor(timeline$State)
 
 # Allocate each record to a day
-timeline$Date <- as_date(timeline$Time)  
 
+timeline$Sleep.Date <- (as_date(ifelse(hour(timeline$Time) < 17
+                                      , date(timeline$Time) - days(1)
+                                      , date(timeline$Time))) + hours(17)
+                               )
 
-timeline$Date <-  if (hour(timeline$Time) < 17)
-                  {
-                    timeline$Date - days(.1)
-                  } else
-                  {
-                    timeline$Date
-                  }
+timeline$int <- interval(timeline$Sleep.Date + hours(17), timeline$Sleep.Date + days(1) + hours(17))
 
-
+tz(timeline$Time) <- "UTC"
+timeline$offset <- timeline$Time - timeline$Sleep.Date
 
 start.date <- timeline %>% 
               select(Time) %>% 
               slice(1)
-start.date <- trunc(start.date[,1]$Time, "day")
-start.date <- update(start.date, hour = 17)
 
 end.date <-   timeline %>% 
               select(Time) %>% 
               slice(n())
-end.date <-   trunc(end.date[,1]$Time, "day")
-end.date <-   update(end.date, hour = 17)
-
 
 
 
