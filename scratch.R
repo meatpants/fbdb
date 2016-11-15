@@ -41,6 +41,8 @@ sleep <-  sleep %>%
 
 sleep$Time <- parse_date_time(sleep$Time, "%Y-%m-%d %H:%M:%S", tz="")
 
+tz(timeline$Time) <- "UTC"
+
 timeline <-   breaks %>% 
               bind_rows(sleep) %>%
               arrange(Time) %>%
@@ -52,13 +54,11 @@ timeline$State <- factor(timeline$State)
 
 timeline$Sleep.Date <- (as_date(ifelse(hour(timeline$Time) < 17
                                       , date(timeline$Time) - days(1)
-                                      , date(timeline$Time))) + hours(17)
-                               )
+                                      , date(timeline$Time)))
+                               ) + hours(17)
+tz(timeline$Sleep.Date)
 
-timeline$int <- interval(timeline$Sleep.Date + hours(17), timeline$Sleep.Date + days(1) + hours(17))
-
-tz(timeline$Time) <- "UTC"
-timeline$offset <- timeline$Time - timeline$Sleep.Date
+timeline$offset <- timeline$Time - timeline$Sleep.Date 
 
 start.date <- timeline %>% 
               select(Time) %>% 
